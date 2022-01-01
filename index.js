@@ -14,6 +14,22 @@ const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology:
 
 
 
+/* //======Custom function for getting all item from Database======//
+const getAllItem = async (req, res, collection) => {
+    const cursor = await collection.find({});
+    const items = await cursor.toArray();
+    res.send(items);
+}
+
+//======Custom function for deleting an item from Database======//
+const deleteItem = async (req, res, collection) => {
+    const id = req.params.id;
+    const query = { _id: ObjectId(id) };
+    const result = await collection.deleteOne(query);
+    res.json(result);
+} */
+
+
 
 const run = async () => {
     try {
@@ -36,6 +52,90 @@ const run = async () => {
             const items = await cursor.toArray();
             res.send(items);
         })
+
+        //======GET API for paginated users======// 
+        app.get('/paginatedUsers', async (req, res) => {
+            const cursor = usersCollection.find({});
+            const count = await cursor.count();
+
+            const page = req.query.page;
+            const size = +req.query.size;
+            let users;
+
+            if (page) {
+                users = await cursor.skip(page * size).limit(size).toArray();
+
+            } else {
+                users = await cursor.toArray();
+            }
+            
+            res.send({
+                count,
+                users
+            });
+        })
+
+        //======GET API for admin ======// 
+        app.get('/users/:email', async (req, res) => {
+            const { email } = req.params;
+            const query = { email: email }
+            const user = await usersCollection.findOne(query);
+            let isAdmin = false;
+            if (user?.role === 'admin') isAdmin = true;
+
+            res.json({ admin: isAdmin })
+        })
+
+        //======DELETE API for product======// 
+        /*  app.delete('/products/:id', async (req, res) => {
+             deleteItem(req, res, productCollection);
+         })
+         */
+
+
+        //======PUT API to update order status======//
+        /*  app.put('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+
+            const filter = { _id: ObjectId(id) };
+            const options = { upsert: true };
+
+            const updateDoc = {
+                $set: {
+                    orderStatus: "Shipped",
+                },
+            };
+
+            const result = await orderCollection.updateOne(filter, updateDoc, options);
+
+            res.json(result);
+        })
+ */
+
+
+
+
+        //======PUT API for making admin======//
+        /*   app.put('/users/admin', verifyToken, async (req, res) => {
+              const user = req.body;
+              const requester = req.decodedEmail;
+              if (requester) {
+                  const requesterAccount = await usersCollection.findOne({ email: requester });
+                  if (requesterAccount.role === 'admin') {
+                      const filter = { email: user.email };
+                      const updateDoc = {
+                          $set: {
+                              role: 'admin'
+                          }
+                      }
+                      const result = await usersCollection.updateOne(filter, updateDoc);
+                      res.json(result);
+                  }
+  
+              } else {
+                  res.status(403).json({ message: 'You can not make admin' })
+              }
+          }) */
 
     } finally {
         // await client.close();
