@@ -37,6 +37,7 @@ const run = async () => {
         const database = client.db("riderDb");
         console.log('DB is connected');
         const usersCollection = database.collection("users")
+        const orderCollection = database.collection("orders")
 
         //======POST API for adding user======// 
         app.post('/users', async (req, res) => {
@@ -113,6 +114,13 @@ const run = async () => {
             const result = await usersCollection.updateOne(filter, updateDoc, options);
             console.log(result);
             res.json(result);
+        })
+
+        //======POST API for adding orders======// 
+        app.post('/orders', async (req, res) => {
+            const order = req.body;
+            const result = await orderCollection.insertOne(order);
+            res.json(result)
         })
 
 
