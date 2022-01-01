@@ -7,6 +7,7 @@ const cors = require('cors');
 const port = process.env.PORT || 5000;
 app.use(cors());
 app.use(express.json());
+const stripe = require('stripe')(process.env.STRIPE_SECRET)
 
 //======Database configuration======//
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.ig1ef.mongodb.net/myFirstDatabase?retryWrites=true&w=majority`;
@@ -118,6 +119,33 @@ const run = async () => {
             const result = await orderCollection.findOne(query);
             res.json(result);
         })
+
+        //======PUT API for specific order ======// 
+        app.put('/orders/:id', async (req, res) => {
+            const id = req.params.id;
+            const payment = req.body;
+            const filter = { _id: ObjectId(id) };
+            const updateDoc = {
+                $set: {
+                    payment: payment
+                }
+            };
+            const result = await orderCollection.updateOne(filter, updateDoc);
+            res.json(result);
+        })
+
+        //======POST API for PAyemtn System ======// 
+        app.post('/create-payment-intent', async (req, res) => {
+            const paymentInfo = req.body;
+            const amount = paymentInfo.price * 100;
+            const paymentIntent = await stripe.paymentIntents.create({
+                currency: 'usd',
+                amount: amount,
+                payment_method_types: ['card']
+            });
+            res.json({ clientSecret: paymentIntent.client_secret })
+        })
+
 
     } finally {
         // await client.close();
