@@ -68,7 +68,7 @@ const run = async () => {
             } else {
                 users = await cursor.toArray();
             }
-            
+
             res.send({
                 count,
                 users
@@ -93,8 +93,8 @@ const run = async () => {
          */
 
 
-        //======PUT API to update order status======//
-        /*  app.put('/orders/:id', async (req, res) => {
+        //======PUT API to to block user======//
+        app.put('/users/:id', async (req, res) => {
             const id = req.params.id;
 
             const filter = { _id: ObjectId(id) };
@@ -102,15 +102,14 @@ const run = async () => {
 
             const updateDoc = {
                 $set: {
-                    orderStatus: "Shipped",
+                    userStatus: "Blocked",
                 },
             };
 
-            const result = await orderCollection.updateOne(filter, updateDoc, options);
-
+            const result = await usersCollection.updateOne(filter, updateDoc, options);
+            console.log(result);
             res.json(result);
         })
- */
 
 
 
