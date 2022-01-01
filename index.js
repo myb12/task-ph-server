@@ -13,24 +13,6 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
 
 
-
-/* //======Custom function for getting all item from Database======//
-const getAllItem = async (req, res, collection) => {
-    const cursor = await collection.find({});
-    const items = await cursor.toArray();
-    res.send(items);
-}
-
-//======Custom function for deleting an item from Database======//
-const deleteItem = async (req, res, collection) => {
-    const id = req.params.id;
-    const query = { _id: ObjectId(id) };
-    const result = await collection.deleteOne(query);
-    res.json(result);
-} */
-
-
-
 const run = async () => {
     try {
         await client.connect();
@@ -122,31 +104,20 @@ const run = async () => {
             const result = await orderCollection.insertOne(order);
             res.json(result)
         })
+        //======GET API for adding orders======// 
+        app.get('/orders', async (req, res) => {
+            const cursor = await orderCollection.find({});
+            const items = await cursor.toArray();
+            res.send(items);
+        })
 
-
-
-
-        //======PUT API for making admin======//
-        /*   app.put('/users/admin', verifyToken, async (req, res) => {
-              const user = req.body;
-              const requester = req.decodedEmail;
-              if (requester) {
-                  const requesterAccount = await usersCollection.findOne({ email: requester });
-                  if (requesterAccount.role === 'admin') {
-                      const filter = { email: user.email };
-                      const updateDoc = {
-                          $set: {
-                              role: 'admin'
-                          }
-                      }
-                      const result = await usersCollection.updateOne(filter, updateDoc);
-                      res.json(result);
-                  }
-  
-              } else {
-                  res.status(403).json({ message: 'You can not make admin' })
-              }
-          }) */
+        //======GET API for specific order ======// 
+        app.get('/orders/:id', async (req, res) => {
+            const { id } = req.params;
+            const query = { _id: ObjectId(id) };
+            const result = await orderCollection.findOne(query);
+            res.json(result);
+        })
 
     } finally {
         // await client.close();
